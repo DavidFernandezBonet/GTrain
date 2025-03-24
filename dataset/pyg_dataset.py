@@ -44,7 +44,7 @@ class MyPYGGraphDataset(InMemoryDataset):
         all_files = [os.path.join(self.data_dir, f) for f in os.listdir(self.data_dir) if f.endswith('.pt')]
         self.metadata = None
         for file_path in all_files:
-            loaded_package = torch.load(file_path)
+            loaded_package = torch.load(file_path, weights_only=False)
             if isinstance(loaded_package, dict):
                 data = loaded_package.get("data", None)
                 metadata = loaded_package.get("metadata", None)

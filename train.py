@@ -35,8 +35,8 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     ###     CHANGE THIS        ###   #TODO: important per en Marc :)
-    data_dir = '/home/david/PycharmProjects/Spatial_Constant_Analysis/data/edge_filtering_dataset/strong_false_lite_dataset_with_pyg_objects'  # directory with .pt files
-    save_model_folder = '/home/david/Desktop/Datasets/TEST/'
+    data_dir = 'C:/Users/marcd/OneDrive/Escritorio/KTH/SciLifeLab/Code/GTrain/Dataset_Lite'  # directory with .pt files
+    save_model_folder = 'C:/Users/marcd/OneDrive/Escritorio/KTH/SciLifeLab/Code/GTrain/Trained Models/'
     ### ---------------------- ###
 
 
