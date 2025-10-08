@@ -34,8 +34,8 @@ def main():
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    ###     CHANGE THIS        ###   #TODO: important per en Marc :)
-    data_dir = 'C:/Users/marcd/OneDrive/Escritorio/KTH/SciLifeLab/Code/GTrain/Dataset_Lite'  # directory with .pt files
+    ###     CHANGE THIS        ###   #TODO: Change these paths
+    data_dir = 'C:/Users/marcd/OneDrive/Escritorio/KTH/SciLifeLab/Code/GTrain/Dataset_Lite/Hard Dataset/'  # directory with .pt files
     save_model_folder = 'C:/Users/marcd/OneDrive/Escritorio/KTH/SciLifeLab/Code/GTrain/Trained Models/'
     ### ---------------------- ###
 
@@ -51,11 +51,11 @@ def main():
     layers = 3
     n_edge_attributes = 3
     n_graph_attributes = 5
-    n_node_attributes = 3
+    n_node_attributes = 5
     attn_kwargs = {'dropout': 0.5}
-    train_ratio = 0.9
-    val_ratio = 0.05
-    test_ratio = 0.05
+    train_ratio = 0.6
+    val_ratio = 0.20
+    test_ratio = 0.20
 
     if use_node2vec:
         node_in_dim = n_node_attributes + node2vec_feats
@@ -112,7 +112,7 @@ def main():
         val_losses = []
         test_losses = []
         start_time = time.time()
-        best_train_loss = float('inf')
+        best_val_loss = float('inf')
         best_epoch = 0
         best_model_state = None
 
@@ -120,21 +120,21 @@ def main():
             epoch_start_time = time.time()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5)
             train_loss = train(model, train_loader, device, optimizer, pos_weight_value, augmentation=data_augmentation)
-            val_loss = test(model, val_loader, device)
-            test_loss_val = test(model, test_loader, device)
-            scheduler.step(val_loss)
+            val_loss, val_accuracy = test(model, val_loader, device)
+            test_loss_val, test_acc = test(model, test_loader, device)
+            scheduler.step(train_loss)
             train_losses.append(train_loss)
             val_losses.append(val_loss)
             test_losses.append(test_loss_val)
-            if train_loss < best_train_loss:
-                best_train_loss = train_loss
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
                 best_epoch = epoch
                 best_model_state = model.state_dict()
             elapsed_time = time.time() - epoch_start_time
             total_elapsed = time.time() - start_time
             remaining_epochs = n_epochs - epoch
             estimated_time_remaining = elapsed_time * remaining_epochs
-            print(f"Epoch {epoch:03d} | Train: {train_loss:.4f} | Best: {best_train_loss:.4f} | Val: {val_loss:.4f} | Test: {test_loss_val:.4f} | Epoch Time: {elapsed_time:.2f}s | ETA: {estimated_time_remaining:.2f}s | Total: {total_elapsed:.2f}s")
+            print(f"Epoch {epoch:03d} | Train: {train_loss:.4f} | Best: {best_val_loss:.4f} | Val: {val_loss:.4f} | Test: {test_loss_val:.4f} | Val Accuracy: {val_accuracy:.4f} | Test Accuracy: {test_acc:.4f}| Epoch Time: {elapsed_time:.2f}s | ETA: {estimated_time_remaining:.2f}s | Total: {total_elapsed:.2f}s")
 
         total_time = time.time() - start_time
         print(f"Training completed in {total_time:.2f} seconds.")
@@ -147,9 +147,9 @@ def main():
             'model_state_dict': best_model_state,
             'config': model_config,
             'best_epoch': best_epoch,
-            'best_train_loss': best_train_loss,
+            'best_val_loss': best_val_loss,
         }, os.path.join(save_model_folder, f"best_{model_custom_name}"))
-        print(f"Best epoch: {best_epoch} with loss: {best_train_loss:.4f}")
+        print(f"Best epoch: {best_epoch} with loss: {best_val_loss:.4f}, and accuracy: {val_accuracy:.4f}, {test_acc:.4f}")
         from utils import evaluate_graphwise
         graphwise_results = evaluate_graphwise(model, val_dataset, device)
         for r in graphwise_results:

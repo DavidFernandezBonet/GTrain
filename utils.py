@@ -111,24 +111,43 @@ def test(model, loader, device):
         device: Device to run on.
 
     Returns:
-        Average loss per edge.
+        Tuple of (average loss per edge, accuracy)
     """
     model.eval()
     total_loss = 0
     total_edges = 0
+    total_correct = 0
+    total_predictions = 0
+    
     for data in loader:
         data = data.to(device)
         out = model(data)
+        
+        # Get the true labels
         if hasattr(data, 'edge_label'):
-            loss = F.binary_cross_entropy_with_logits(out, data.edge_label)
+            labels = data.edge_label
         elif hasattr(data, 'y'):
-            loss = F.binary_cross_entropy_with_logits(out, data.y.to(torch.float))
+            labels = data.y.to(torch.float)
         else:
             raise ValueError("No edge_label or y in data")
+            
+        # Compute loss
+        loss = F.binary_cross_entropy_with_logits(out, labels)
+        
+        # Compute accuracy
+        predictions = (torch.sigmoid(out) > 0.5).float()  # Convert probabilities to binary predictions
+        correct = (predictions == labels).sum().item()
+        
         num_edges = data.edge_index.size(1)
         total_loss += loss.item() * num_edges
         total_edges += num_edges
-    return total_loss / total_edges
+        total_correct += correct
+        total_predictions += labels.numel()
+    
+    avg_loss = total_loss / total_edges
+    accuracy = total_correct / total_predictions
+    
+    return avg_loss, accuracy
 
 
 def evaluate_graphwise(model, dataset, device):
