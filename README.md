@@ -1,7 +1,7 @@
 
 # Graph Transformer for edge classification in proximity graphs 
 
-<img width="1020" height="740" alt="gps_architecture" src="https://github.com/user-attachments/assets/01de8e33-4cd2-4511-bfea-9c500303bbdc" />
+<img width="700" alt="gps_architecture" src="https://github.com/user-attachments/assets/01de8e33-4cd2-4511-bfea-9c500303bbdc" />
 
 This repository contains code for training a graph transformer using PyTorch Geometric (PyG) objects. The code is organized into modules for datasets, models, transforms, and utilities. Use `train.py` as the main entry point for training or testing the model.
 
